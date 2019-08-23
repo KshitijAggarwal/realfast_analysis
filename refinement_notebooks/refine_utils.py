@@ -84,7 +84,7 @@ def cd_refine(cd, nsubbands = 4, save = False, devicenum='0', mode='GPU'):
     os.environ['CUDA_VISIBLE_DEVICES'] = devicenum
 
     dmt = make_dmt(ft_dedisp, dm_start-dm, dm_end-dm, 256, chan_freqs/1000,
-                   tsamp, mode=mode, device=int(devicenum))
+                   tsamp, mode=mode, devicenum=int(devicenum))
     
     dispersed = disperse(ft_dedisp, -1*dm, chan_freqs/1000, tsamp)
     
