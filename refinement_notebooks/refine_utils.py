@@ -26,7 +26,7 @@ def disperse(data, dm, freqs, inttime):
     delay = util.calc_delay(freqs, freqs.max(), dm, inttime)
     return dedisperse_roll(data, delay)
 
-def cd_refine(cd, nsubbands = 4, save = False, devicenum='0', mode='GPU'):
+def cd_refine(cd, nsubbands = 4, save = False, devicenum='0', mode='GPU', outdir=None):
     from rfpipe.search import make_dmt
     segment, candint, dmind, dtind, beamnum = cd.loc
     st = cd.state
@@ -153,7 +153,11 @@ def cd_refine(cd, nsubbands = 4, save = False, devicenum='0', mode='GPU'):
     segment, candint, dmind, dtind, beamnum = candloc
     #plt.tight_layout()
     if save==True:
-        plt.savefig('{0}_refined.png'.format(cd.candid), bbox_inches='tight')
+        if outdir:
+            plt.savefig(outdir+'{0}_refined.png'.format(cd.candid), bbox_inches='tight')
+        else:
+            plt.savefig('{0}_refined.png'.format(cd.candid), bbox_inches='tight')
+
     plt.show()
 
 def calc_subband_info(ft, chan_freqs, nsubbands=4):
