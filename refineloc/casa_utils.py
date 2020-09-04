@@ -101,12 +101,13 @@ def fitimage(image, outname='tmp.', xmin=None, xmax=None, ymin=None, ymax=None, 
         az_err = direction['error']['longitude']['value']
         el_err = direction['error']['latitude']['value']
         print(direction)
-        peak_ra = qa.unit(qa.angle(qa.quantity(az, unitname='rad'), prec=13)[0], unitname='deg')['value']
-        peak_dec = qa.unit(qa.angle(qa.quantity(el, unitname='rad'), prec=13)[0], unitname='deg')['value']
-        print('{0} +- {1}"'.format(peak_ra, az_err))
-        print('{0} +- {1}"'.format(peak_dec, el_err))
-        print('Fitpeak flux: {0} Jy'.format(imfit['results']['component0']['peak']['value']))
+
         co0 = coordinates.SkyCoord(ra=np.degrees(az), dec=np.degrees(el), unit=(units.deg, units.deg))
+#         peak_ra = qa.unit(qa.angle(qa.quantity(az, unitname='rad'), prec=13)[0], unitname='deg')['value']
+#         peak_dec = qa.unit(qa.angle(qa.quantity(el, unitname='rad'), prec=13)[0], unitname='deg')['value']
+        print('{0} +- {1}"'.format(co0.ra.degree, az_err))
+        print('{0} +- {1}"'.format(co0.dec.degree, el_err))
+        print('Fitpeak flux: {0} Jy'.format(imfit['results']['component0']['peak']['value']))
         print(co0.to_string('hmsdms'))
     else:
         print('fitcomponents did not converge')
