@@ -44,6 +44,7 @@ def makeimage(msfile, field, outname='tmp.', niter=50, cell=0.5, npix=4096,
     makeimage(msfile1, fieldnames[0], outname='IMNAME', spw='5~8', niter=100, cell=0.5, npix=4096)
     
     spw range is end inclusive
+    
     """
     # To remove earlier products? 
 #     %sx rm -rf $msfile?*
@@ -144,6 +145,7 @@ def fitimage(image, outname='tmp.', xmin=None, xmax=None, ymin=None, ymax=None, 
 
 def getimage(image):
     """
+    
     Loads and summarize the image, Peak SNR and position
     
     """
@@ -156,13 +158,11 @@ def getimage(image):
     npixx,npixy,nch,npol = dd['shape']
     print('Image shape: {0}'.format(dd['shape']))
     imvals = ia.getchunk(0, int(npixx))[:,:,0,0]
-    peakx, peaky = np.where(imvals.max() == imvals)
-    print('Peak SNR at pix ({0},{1}) = {2}'.format(peakx[0], peaky[0], imvals.max()/imvals.std()))
-#    print('Beam shape: {0}'.format(ia.history()[1].split('\n')[10].split(':')[5]))
     return imvals    
 
 
-def findfrb(name, msfile1, fieldname, spws, npix=2048):
+def findfrb(name, msfile1, fieldname, spws, niter=100, cell=0.5, npix=2048, xmin=None, 
+            xmax=None, ymin=None, ymax=None):
     """
     
     Generates the image and reports the peak position and SNR
@@ -177,15 +177,73 @@ def findfrb(name, msfile1, fieldname, spws, npix=2048):
         except OSError as e:  ## if failed, report it back to the user ##
             pass
             
-    makeimage(msfile1, fieldname, outname=name, spw=spws, niter=100, cell=0.5, npix=npix)
+    makeimage(msfile1, fieldname, outname=name, spw=spws, niter=niter, cell=cell, npix=npix)
     imvals = getimage(f'{name}.image')
+    
+    if xmin is None:
+        xmin = 0
+    if xmax is None:
+        xmax = imvals.shape[0]
+    if ymin is None:
+        ymin = 0
+    if ymax is None:
+        ymax = imvals.shape[1]
+
+    imvals = imvals[xmin:xmax, ymin:ymax]
+    
+    peakx, peaky = np.where(imvals.max() == imvals)
     snr = imvals.max()/imvals.std()
+    print('Peak SNR at pix ({0},{1}) = {2}'.format(peakx[0], peaky[0], snr))
+#    print('Beam shape: {0}'.format(ia.history()[1].split('\n')[10].split(':')[5]))
     npixx,npixy = imvals.shape
     peakx, peaky = np.where(imvals.max() == imvals)
     peakx, peaky = peakx[0], peaky[0]
-    print(peakx, peaky)
     print('------------------------')
     return snr
+
+
+def image_summary(image):
+    """
+
+    Print image summary and returns data and headers
+
+    """
+    ia = tools.image()
+    ia.open(image)
+
+    # summarize image
+    dd = ia.summary()
+
+    npixx,npixy,nch,npol = dd['shape']
+    print('Image shape: {0}'.format(dd['shape']))
+    imvals = ia.getchunk(0, int(npixx))[:,:,0,0]
+
+    ra_inc = dd['incr'][0]*units.radian
+    dec_inc = dd['incr'][1]*units.radian
+
+    c = ia.coordmeasures()
+    direction = c['measure']['direction']
+    az = direction['m0']['value']
+    el = direction['m1']['value']
+    co0 = coordinates.SkyCoord(ra=np.degrees(az), dec=np.degrees(el), unit=(units.deg, units.deg))
+    co0_str = co0.to_string('hmsdms')
+    refpix = (dd['refpix'][0], dd['refpix'][1])
+    print(f'Coordinates at reference pixel {refpix} are {co0_str}')
+
+    ra_inc = dd['incr'][0]*units.radian
+    dec_inc = dd['incr'][1]*units.radian
+    print(f'RA, Dec increment: {ra_inc.to(units.arcsecond).value}", {dec_inc.to(units.arcsecond).value}"')
+
+    peakx, peaky = np.where(imvals.max() == imvals)
+    peakx, peaky = peakx[0], peaky[0]
+    print('Peak SNR at pix ({0},{1}) = {2}'.format(peakx, peaky, imvals.max()/imvals.std()))
+
+    rapeak = co0.ra + (peakx - refpix[0])*ra_inc
+    decpeak = co0.dec + (peaky - refpix[1])*dec_inc
+    copeak = coordinates.SkyCoord(ra=rapeak,dec=decpeak).to_string('hmsdms')
+    print(f'Rough coordinates of peak pixel are {copeak}')
+
+    return imvals, dd, c
 
 
 ## Data summary
