@@ -8,7 +8,7 @@ import pylab as plt
 import os, glob, shutil
 
 
-def applycal(msfile, gaintables, gainfield=None, targetfield=None, interp=None):
+def applycal(msfile, gaintables, gainfield=None, targetfield=None, interp=None, spw=None, spwmap=None):
     """    
     
     Apply CASA calibration using calibration tables
@@ -28,8 +28,15 @@ def applycal(msfile, gaintables, gainfield=None, targetfield=None, interp=None):
     if not targetfield:
         targetfield = '1'
         
+    if not spw:
+        spw = ''
+    print(spw)
+       
+    if not spwmap:
+        spwmap = []
+        
     tasks.applycal(vis=msfile, gaintable=gaintables, gainfield=gainfield,
-                   field=targetfield, interp=interp, calwt=[False])
+                   field=targetfield, interp=interp, calwt=[False], spw=spw, spwmap=spwmap)
     
     
 def makeimage(msfile, field, outname='tmp.', niter=50, cell=0.5, npix=4096, 
