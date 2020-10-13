@@ -77,3 +77,14 @@ def calc_cand_integration(cd):
     
     i = segment*cd.state.readints + integration*cd.state.dtarr[dtind] - delay_ints - 1
     return i, name, dm
+
+
+def get_spw_freqs(st):
+    """
+    
+    Returns the reference frequencies corresponding to spws 
+    
+    """
+    
+    reffreq, nchan, chansize = st.metadata.spw_sorted_properties
+    return st.spw, np.take(reffreq, st.spw)
