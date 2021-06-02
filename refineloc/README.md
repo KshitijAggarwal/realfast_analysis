@@ -10,3 +10,4 @@ Uses [sdmpy](https://github.com/demorest/sdmpy) to generate a dedispersed SDM co
 * `casa_imaging.ipynb` : Read the MS file created in prev step, figure out the optimal spw range, and image using CASA. Uses `imfit` to fit for a position
 and reports the peak position, flux and fit errors. 
 
+* `rf_burstfit.ipynb`: Starting from canddata object, run the burstfit process on a candidate, save the MCMC outputs, and convert to physical parameters. Requires [burstfit](https://github.com/thepetabyteproject/burstfit).
